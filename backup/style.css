@@ -1,0 +1,152 @@
+/* Importar fuentes de Google Fonts para un estilo de Halloween */
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Metal+Mania&display=swap');
+
+/* --- Estilos Generales y del Contenedor --- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0d0d0d;
+    color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100" opacity="0.1"><path d="M50 0 L100 50 L50 100 L0 50 Z" fill="%23ff6600"/></svg>');
+    background-repeat: repeat;
+}
+
+.halloween-container {
+    width: 90%;
+    max-width: 800px;
+    background-color: rgba(26, 26, 26, 0.9);
+    padding: 30px 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+    text-align: center;
+    border: 2px solid #ff6600;
+}
+
+/* --- Títulos y Encabezados --- */
+h1 {
+    font-family: 'Creepster', cursive;
+    font-size: 3.5rem;
+    color: #ff6600;
+    text-shadow: 2px 2px 4px #8a0303;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+h2 {
+    font-family: 'Metal Mania', cursive;
+    color: #a333c1;
+    font-size: 2rem;
+    margin-top: 30px;
+    text-shadow: 1px 1px 2px #4b0082;
+}
+
+/* --- Secciones de Interfaz y Formulario --- */
+.upload-section, .selectors-section, .results-section {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #ff9900;
+}
+
+input[type="file"] {
+    display: block;
+    margin: 0 auto 15px;
+}
+
+select {
+    width: 80%;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #333;
+    color: #f0f0f0;
+    border: 1px solid #ff9900;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+/* --- Botón de Transformación --- */
+#transformButton {
+    background-color: #ff6600;
+    color: #1a1a1a;
+    font-family: 'Metal Mania', cursive;
+    font-size: 1.5rem;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+}
+
+#transformButton:hover {
+    background-color: #ff9900;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 153, 0, 0.7);
+}
+
+#transformButton:active {
+    transform: scale(0.98);
+}
+
+/* --- Estilos para los Resultados --- */
+.results-section {
+    border-top: 2px dashed #ff6600;
+    padding-top: 20px;
+}
+
+#previewImage, #transformedImage, #halloweenAnimation, #halloweenSound {
+    max-width: 100%;
+    height: auto;
+    border: 3px solid #a333c1;
+    border-radius: 10px;
+    box-shadow: 0 0 15px #a333c1;
+}
+
+#loadingMessage {
+    color: #3cb371;
+    font-size: 1.2rem;
+    margin-top: 20px;
+    font-family: 'Metal Mania', cursive;
+}
+
+/* --- Animaciones --- */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Telarañas y murciélagos como decoración (opcional) */
+body::before, body::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+}
+
+body::before {
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 200px;
+    background: url('static/images/izquierda_img.png') no-repeat;
+    background-size: contain;
+}
+
+body::after {
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: url('static/images/derecha_img.png') no-repeat;
+    background-size: contain;
+}
