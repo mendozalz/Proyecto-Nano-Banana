@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galería de Transformaciones</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="shortcut icon" href="static/images/favicon.png" type="image/x-icon">
+  <style>
+    /* Estilos mínimos para la galería reutilizando la estética existente */
+    .gallery-nav {
+      text-align: left; margin-bottom: 10px;
+    }
+    .gallery-nav a { color:#ff9900; margin-right:12px; text-decoration:none; }
+
+    .gallery-container { max-width: 1100px; width: 92%; margin: 30px auto; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .gallery-card { background: rgba(26, 26, 26, 0.9); border: 2px solid #ff6600; border-radius: 12px; padding: 8px; box-shadow: 0 0 12px rgba(255, 102, 0, 0.25); }
+    .gallery-card img { width: 100%; height: auto; display: block; border-radius: 8px; border: 2px solid #a333c1; box-shadow: 0 0 10px #a333c1; }
+    .gallery-empty { color:#ffcc99; text-align:center; margin: 24px 0; }
+    .gallery-loader { text-align:center; margin: 20px 0; color:#ff9900; font-family:'Metal Mania', cursive; }
+    .sentinel { height: 2px; }
+  </style>
+</head>
+<body>
+  <div class="gallery-container">
+    <nav class="gallery-nav">
+      <a href="/">Inicio</a>
+      <a href="/galeria">Galería</a>
+    </nav>
+    <h1>🕸️ Galería de Transformaciones 🕯️</h1>
+
+    <div id="galleryGrid" class="gallery-grid"></div>
+    <div id="emptyMsg" class="gallery-empty" style="display:none;">Aún no hay transformaciones para mostrar.</div>
+    <div id="loader" class="gallery-loader" style="display:none;">Cargando...</div>
+    <div id="sentinel" class="sentinel"></div>
+  </div>
+
+  <!-- Lightbox Overlay -->
+  <div id="lightboxOverlay" class="lightbox-overlay" style="display:none;">
+    <div class="lightbox-content" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+      <button id="lbClose" class="lightbox-close" aria-label="Cerrar">✖</button>
+      <button id="lbPrev" class="lightbox-nav prev" aria-label="Anterior">◀</button>
+      <button id="lbNext" class="lightbox-nav next" aria-label="Siguiente">▶</button>
+      <img id="lbImage" alt="Imagen ampliada" />
+      <div id="lbCaption" class="lightbox-caption"></div>
+      <div style="text-align:center; margin-top:8px;">
+        <a id="lbDownload" class="download-btn" href="#" download>Descargar</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/gallery.js"></script>
+</body>
+</html>

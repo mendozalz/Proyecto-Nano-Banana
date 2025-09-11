@@ -22,9 +22,7 @@ def _digest_image_and_disfraz(img_bytes: bytes, disfraz: str, extra: str = "", t
     return h.hexdigest()
 
 def _extract_retry_delay_seconds(err: Exception) -> int | None:
-    """Intenta extraer RetryInfo.retryDelay en segundos a partir de la excepción (cuando viene en el JSON del error).
-    Formatos típicos: 'retryDelay': '55s' o 'retryDelay': '6s'. Devuelve None si no puede extraer.
-    """
+
     try:
         import re
         m = re.search(r"retryDelay\'?:\s*'?(\d+)s" , str(err))
@@ -98,6 +96,17 @@ def serve_style():
 @app.route('/script.js', methods=['GET'])
 def serve_script():
     return send_from_directory(BASE_DIR, 'script.js')
+
+
+@app.route('/gallery.js', methods=['GET'])
+def serve_gallery_script():
+    return send_from_directory(BASE_DIR, 'gallery.js')
+
+
+@app.route('/galeria', methods=['GET'])
+def serve_gallery_page():
+    # Sirve la página de galería
+    return send_from_directory(BASE_DIR, 'gallery.html')
 
 
 @app.route('/health', methods=['GET'])
@@ -174,6 +183,11 @@ def transform_halloween():
     image_url = request.form.get('image_url', '')
     extra_prompt = request.form.get('extra_prompt', '').strip()
     use_thematic_bg = request.form.get('use_thematic_bg', '1').strip() in ('1', 'true', 'True', 'yes')
+    display_name = request.form.get('display_name', '').strip()
+
+    # Validación de nombre para la imagen generada (mínimo 5 caracteres)
+    if len(display_name) < 5:
+        return jsonify({'error': 'display_name es obligatorio y debe tener mínimo 5 caracteres'}), 400
 
     if not image_url:
         return jsonify({'error': 'Falta image_url (usa /upload primero)'}), 400
@@ -181,6 +195,7 @@ def transform_halloween():
     # Por defecto, usar la misma imagen (fallback)
     transformed_image_url = image_url
     data_url = None
+    final_image_bytes = None  # bytes de la imagen resultante para almacenar en Firestore
 
     # Intentar caché (si tenemos bytes de la imagen)
     img_bytes_for_cache = None
@@ -189,19 +204,22 @@ def transform_halloween():
         cache_key = _digest_image_and_disfraz(img_bytes_for_cache, disfraz, extra_prompt, 'bg' if use_thematic_bg else 'nobg')
         cached = EDIT_CACHE.get(cache_key)
         if cached and os.path.isfile(os.path.join(RESULTS_FOLDER, os.path.basename(cached))):
-            transformed_image_url = cached
-            print(f"[Cache] Usando resultado cacheado: {transformed_image_url}")
-            return jsonify({
-                'transformed_image_url': transformed_image_url,
-                'animation_url': None,
-                'sound_url': None,
-                'ai_debug': {
-                    'model': os.environ.get('GEMINI_IMAGE_MODEL', 'imagen-3.0-fast'),
-                    'changed': True,
-                    'mode': 'edit' if os.environ.get('GEMINI_IMAGE_MODEL', 'imagen-3.0-fast').lower().startswith('gemini') else 'generate',
-                    'cache': True
-                }
-            })
+            # Cargar bytes desde el resultado cacheado para persistir en Firestore y devolver data_url
+            cached_path = os.path.join(RESULTS_FOLDER, os.path.basename(cached))
+            try:
+                with open(cached_path, 'rb') as f:
+                    final_image_bytes = f.read()
+                transformed_image_url = ''  # evitamos dependencia del filesystem
+                # Data URL provisional; será reemplazado por la versión WebP comprimida más adelante
+                try:
+                    provisional_mime = guess_type(cached_path)[0] or 'image/png'
+                    data_url = f"data:{provisional_mime};base64,{base64.b64encode(final_image_bytes).decode('utf-8')}"
+                except Exception:
+                    pass
+                print(f"[Cache] Usando bytes desde cache {cached_path} para persistir en Firestore")
+            except Exception:
+                # Si falla, continuamos sin cache y dejamos que el flujo normal intente IA o fallback
+                pass
     except Exception:
         pass
 
@@ -230,9 +248,9 @@ def transform_halloween():
                         "Replace the background with a mystical moonlit scene with light fog and shallow depth of field. Do not generate a different person."
                     ),
                     'zombie': (
-                        "Edit the provided photo. Keep the same person and identity. "
-                        "Apply glamorous zombie makeup: pale skin tint, under-eye shadows, light cracks and faint veins; eerie green cinematic grade. "
-                        "Replace the background with a moody abandoned-street night vibe, softly blurred. Do not replace the person."
+                        "Edit the provided photo. Keep the same persona and identity. "
+                        "Apply glamorous zombie makeup: pale skin tone, shadows under the eyes, faint cracks and veins; a haunting green cinematic effect. "
+                        "Replace the background with a spooky look and zombies in the background, softly blurred. Don't replace the person."
                     ),
                     'werewolf': (
                         "Edit the provided photo. Keep the same person and pose. "
@@ -332,12 +350,8 @@ def transform_halloween():
                         raise RuntimeError('No se obtuvo imagen de Gemini (sin datos)')
 
                     img_bytes = base64.b64decode(img_b64)
-                    out_name = f"{uuid.uuid4().hex}.png"
-                    out_path = os.path.join(RESULTS_FOLDER, out_name)
-                    with open(out_path, 'wb') as f:
-                        f.write(img_bytes)
-                    transformed_image_url = f"/results/{out_name}"
-                    print(f"[Gemini] Imagen generada y guardada en {transformed_image_url}")
+                    final_image_bytes = img_bytes
+                    print(f"[Gemini] Imagen generada (en memoria)")
                 else:
                     # Modelo de la familia Gemini (edición de imagen de entrada)
                     # Patrón según documentación: contents=[prompt, PIL.Image]
@@ -403,17 +417,13 @@ def transform_halloween():
                         if not out_bytes:
                             raise RuntimeError('La respuesta no contiene imagen (inline_data)')
 
-                        out_name = f"{uuid.uuid4().hex}.png"
-                        out_path = os.path.join(RESULTS_FOLDER, out_name)
-                        with open(out_path, 'wb') as f:
-                            f.write(out_bytes)
-                        transformed_image_url = f"/results/{out_name}"
-                        # Construir Data URL (base64) para UX estilo video
+                        final_image_bytes = out_bytes
+                        # Data URL provisional (se reemplaza por WebP más abajo)
                         try:
                             data_url = "data:image/png;base64," + base64.b64encode(out_bytes).decode('utf-8')
                         except Exception:
                             data_url = None
-                        print(f"[Gemini Edit] Imagen editada y guardada en {transformed_image_url} | parts={parts_count} inline={has_inline}")
+                        print(f"[Gemini Edit] Imagen editada (en memoria) | parts={parts_count} inline={has_inline}")
                         # Guardar en caché
                         try:
                             key = cache_key if img_bytes_for_cache is not None else _digest_image_and_disfraz(img_bytes_for_cache, disfraz, extra_prompt, 'bg' if use_thematic_bg else 'nobg')
@@ -431,6 +441,45 @@ def transform_halloween():
         except Exception as e:
             print(f"[Aviso] Integración Gemini no disponible: {e}")
 
+    # Si no hubo bytes de IA (fallback), tomar los bytes de la imagen original subida
+    if final_image_bytes is None:
+        try:
+            if img_bytes_for_cache is None:
+                img_bytes_for_cache, src_path_for_cache = _read_upload_bytes_from_url(image_url)
+            final_image_bytes = img_bytes_for_cache
+        except Exception:
+            final_image_bytes = None
+
+    # Convertir a WebP comprimido (<~900 KiB) y construir data_url; guardar en Firestore
+    stored_b64 = None
+    stored_mime = None
+    if final_image_bytes is not None:
+        try:
+            from io import BytesIO as _BytesIO
+            max_side = 1024
+            qualities = [80, 70, 60, 50]
+            img = Image.open(_BytesIO(final_image_bytes)).convert('RGB')
+            w, h = img.size
+            scale = min(1.0, max_side / max(w, h))
+            if scale < 1.0:
+                img = img.resize((int(w*scale), int(h*scale)), Image.LANCZOS)
+            webp_bytes = None
+            for q in qualities:
+                buf = _BytesIO()
+                img.save(buf, format='WEBP', quality=q, method=6)
+                b = buf.getvalue()
+                if len(b) <= 900 * 1024:
+                    webp_bytes = b
+                    break
+            if webp_bytes is None:
+                webp_bytes = b
+            stored_b64 = base64.b64encode(webp_bytes).decode('utf-8')
+            stored_mime = 'image/webp'
+            data_url = f"data:{stored_mime};base64,{stored_b64}"
+            transformed_image_url = ''  # no dependemos del filesystem
+        except Exception as _e:
+            pass
+
     if db is not None:
         try:
             doc_ref = db.collection('transformaciones_halloween').document()
@@ -439,7 +488,10 @@ def transform_halloween():
                 'original_image_url': image_url,
                 'transformed_image_url': transformed_image_url,
                 'disfraz': disfraz,
-                'estado': 'generated_ai' if transformed_image_url != image_url else 'themed_local'
+                'estado': 'generated_ai' if final_image_bytes is not None else 'themed_local',
+                'display_name': display_name,
+                'transformed_image_b64': stored_b64 or None,
+                'transformed_mime': stored_mime or None
             })
         except Exception as e:
             print(f"[Aviso] No se pudo escribir en Firestore: {e}")
@@ -456,6 +508,110 @@ def transform_halloween():
             'use_thematic_bg': use_thematic_bg
         }
     })
+
+
+# --------- API de Galería (antes de app.run) ---------
+@app.route('/api/gallery', methods=['GET'])
+def api_gallery():
+    """Devuelve una lista paginada de imágenes transformadas.
+    Prioriza Firestore; si no está disponible, hace fallback a filesystem en results/.
+    Parámetros (Firestore): limit, cursor (timestamp ISO8601)
+    Parámetros (FS): limit, offset
+    """
+    try:
+        limit = int(request.args.get('limit', '24'))
+    except Exception:
+        limit = 24
+
+    # Preferir Firestore si está disponible
+    if db is not None:
+        try:
+            from google.cloud import firestore as _firestore  # type: ignore
+            cursor = request.args.get('cursor', '')
+            q = db.collection('transformaciones_halloween').order_by('timestamp', direction=_firestore.Query.DESCENDING)
+            if cursor:
+                try:
+                    # Intentar filtrar por timestamp menor al cursor
+                    q = q.where('timestamp', '<', cursor)
+                except Exception as _:
+                    pass
+            q = q.limit(limit)
+            docs = list(q.stream())
+            items = []
+            last_ts = None
+            for d in docs:
+                data = d.to_dict() or {}
+                dn = (data.get('display_name') or '').strip()
+                b64 = (data.get('transformed_image_b64') or '').strip()
+                mime = (data.get('transformed_mime') or 'image/webp').strip()
+                img_url = (data.get('transformed_image_url') or '').strip()
+                item = {}
+                if b64:
+                    item['data_url'] = f"data:{mime};base64,{b64}"
+                elif img_url:
+                    # Intentar leer del filesystem si apunta a /results/
+                    if img_url.startswith('/results/'):
+                        try:
+                            filename = img_url.split('/results/', 1)[1]
+                            fs_path = os.path.join(RESULTS_FOLDER, filename)
+                            if os.path.isfile(fs_path):
+                                with open(fs_path, 'rb') as f:
+                                    raw = f.read()
+                                _mime = guess_type(fs_path)[0] or 'image/png'
+                                item['data_url'] = f"data:{_mime};base64,{base64.b64encode(raw).decode('utf-8')}"
+                            else:
+                                item['image_url'] = img_url
+                        except Exception:
+                            item['image_url'] = img_url
+                    else:
+                        item['image_url'] = img_url
+                else:
+                    continue
+                if dn:
+                    item['display_name'] = dn
+                # Nombre sugerido para descarga
+                try:
+                    base = ''.join(c.lower() if c.isalnum() or c in ('-', '_') else '-' for c in dn).strip('-_') or 'imagen'
+                    if 'data_url' in item:
+                        ext = 'webp' if (mime.endswith('webp')) else (mime.split('/')[-1] or 'png')
+                    else:
+                        guessed = guess_type(img_url)[0] or 'image/png'
+                        ext = (guessed.split('/')[-1] or 'png')
+                    item['suggested_name'] = f"{base}.{ext}"
+                except Exception:
+                    pass
+                items.append(item)
+                last_ts = data.get('timestamp') or last_ts
+            # Si hay items desde Firestore, devolverlos; si no, hacer fallback a filesystem
+            if items:
+                resp = {'items': items}
+                if last_ts and len(items) >= limit:
+                    resp['next_cursor'] = last_ts
+                return jsonify(resp)
+        except Exception as e:
+            print(f"[Aviso] /api/gallery Firestore fallo, usando filesystem: {e}")
+
+    # Fallback a filesystem en results/
+    try:
+        try:
+            offset = int(request.args.get('offset', '0'))
+        except Exception:
+            offset = 0
+        exts = {'.png', '.jpg', '.jpeg', '.gif', '.webp'}
+        files = []
+        for name in os.listdir(RESULTS_FOLDER):
+            p = os.path.join(RESULTS_FOLDER, name)
+            if os.path.isfile(p) and os.path.splitext(name)[1].lower() in exts:
+                files.append((name, os.path.getmtime(p)))
+        files.sort(key=lambda x: x[1], reverse=True)
+        slice_files = files[offset: offset + limit]
+        items = [{'image_url': f"/results/{name}"} for name, _ in slice_files]
+        resp = {'items': items}
+        if offset + limit < len(files):
+            resp['next_offset'] = offset + limit
+        return jsonify(resp)
+    except Exception as e:
+        return jsonify({'items': [], 'error': str(e)}), 200
 
 
 if __name__ == '__main__':

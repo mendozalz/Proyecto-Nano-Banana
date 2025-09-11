@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80px" height="80px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Subir Imagen</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- Calabaza -->
+        <g id="pumpkin" transform="translate(2.000000, 2.000000)">
+            <path d="M10,0 C12.7614237,0 15,2.23857625 15,5 C15,7.76142375 12.7614237,10 10,10 C7.23857625,10 5,7.76142375 5,5 C5,2.23857625 7.23857625,0 10,0 Z" id="pumpkin-body" fill="#FF6600"></path>
+            <path d="M10,10 L10,20" id="stem" stroke="#3D9970" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M5,5 L3,3" id="eye-left" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"></path>
+            <path d="M15,5 L17,3" id="eye-right" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"></path>
+            <path d="M8,7 C8.5,7.5 9.5,7.5 10,7" id="mouth" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"></path>
+        </g>
+        <!-- Icono de subida -->
+        <g id="upload" transform="translate(10.000000, 12.000000)" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0,0 L0,8"></path>
+            <path d="M-4,4 L0,0 L4,4"></path>
+        </g>
+    </g>
+</svg>

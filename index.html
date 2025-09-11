@@ -9,11 +9,42 @@
 </head>
 <body>
     <div class="halloween-container">
+        <nav style="text-align:left; margin-bottom: 10px;">
+            <a href="/" style="color:#ff9900; margin-right:12px; text-decoration:none;">Inicio</a>
+            <a href="/galeria" style="color:#ff9900; text-decoration:none;">Galería</a>
+        </nav>
         <h1>🎃 Tu Álter Ego Halloween 👻</h1>
         <div class="upload-section">
-            <label for="userImage">Sube tu foto:</label>
-            <input type="file" id="userImage" accept="image/*">
-            <img id="previewImage" src="#" alt="Previsualización" style="display:none; max-width: 200px; margin-top: 10px;">
+            <div class="upload-container halloween-theme" id="dropZone">
+                <div class="upload-content">
+                    <div class="halloween-icon">
+                        <img src="static/images/pumpkin-upload-icon.svg" alt="Subir imagen" class="upload-icon">
+                    </div>
+                    <p class="upload-text">¡Atrévete a subir tu foto!</p>
+                    <p class="upload-subtext">Arrástrala aquí o haz clic para seleccionar</p>
+                    <div class="halloween-bats">
+                        <div class="bat">🦇</div>
+                        <div class="bat bat-2">🦇</div>
+                        <div class="bat bat-3">🦇</div>
+                    </div>
+                    <input type="file" id="userImage" accept="image/*" hidden>
+                </div>
+                <div class="halloween-border"></div>
+            </div>
+            <div class="preview-container" id="previewContainer" style="display: none;">
+                <div class="preview-content">
+                    <div class="preview-frame">
+                        <div class="frame-top">🎃</div>
+                        <div class="frame-side frame-left">🎃</div>
+                        <img id="previewImage" src="#" alt="Previsualización" class="preview-image">
+                        <div class="frame-side frame-right">🎃</div>
+                        <div class="frame-bottom">🎃</div>
+                    </div>
+                    <button class="change-image-btn" id="changeImageBtn">
+                        <span class="btn-icon">🔄</span> Cambiar imagen
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="selectors-section">
@@ -34,6 +65,9 @@
                 <option value="wolf_howl">Aullido de Lobo</option>
             </select>
 
+            <label for="displayName" style="margin-top:10px; display:block;">No seas timod@ deja tu nombre <br> (mín. 5 caracteres):</label>
+            <input id="displayName" type="text" placeholder="Ej: Lenin Mendoza" minlength="5" required style="width:100%; max-width:480px;">
+
             <label for="extraPrompt" style="margin-top:10px; display:block;">Prompt extra (opcional):</label>
             <input id="extraPrompt" type="text" placeholder="Ej: ojos brillantes verdes, mantener fondo original" style="width:100%; max-width:480px;">
 
@@ -51,10 +85,13 @@
                 <img id="transformedImage" src="#" alt="Imagen Transformada" style="max-width: 400px;">
                 <img id="themeOverlay" alt="Overlay Temático" style="display:none;">
             </div>
+            <div id="downloadArea" style="display:none; margin-top:10px;">
+                <a id="downloadResultBtn" class="download-btn" href="#" download>Descargar imagen</a>
+            </div>
             <video id="halloweenAnimation" controls loop style="display:none; max-width: 400px; margin-top: 15px;"></video>
             <audio id="halloweenSound" controls style="display:none; margin-top: 10px;"></audio>
-            <p id="loadingMessage" style="display:none;">Procesando tu magia de Halloween...</p>
-            <div id="aiStatus" style="display:none; margin-top:8px; font-size: 0.95rem;"></div>
+            <p id="loadingMessage" style="display:none;">Procesando tu magia de Halloween <br> esto puede tardar un poco...</p>
+            <!-- <div id="aiStatus" style="display:none; margin-top:8px; font-size: 0.95rem;"></div> -->
         </div>
     </div>
     <script src="script.js"></script>

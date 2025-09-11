@@ -1,6 +1,133 @@
 /* Importar fuentes de Google Fonts para un estilo de Halloween */
 @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Metal+Mania&display=swap');
 
+/* --- Etiqueta elegante para nombres en galería --- */
+.name-badge {
+    display: block;
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, #2a0a1a 0%, #1a0a1a 100%);
+    border: 1px solid #ff6600;
+    border-radius: 10px;
+    color: #ffcc99;
+    font-weight: 600;
+    font-family: 'Metal Mania', cursive;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(255, 102, 0, 0.25);
+    letter-spacing: 0.3px;
+}
+
+/* --- Lightbox (galería) --- */
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.lightbox-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: linear-gradient(135deg, #1a0a1a 0%, #2a0a1a 100%);
+    border: 2px solid #ff6600;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(255,102,0,0.4);
+    padding: 16px;
+}
+
+.lightbox-content img {
+    display: block;
+    max-width: 86vw;
+    max-height: 70vh;
+    border-radius: 8px;
+    border: 2px solid #a333c1;
+    box-shadow: 0 0 12px #a333c1;
+    margin: 0 auto;
+}
+
+.lightbox-caption {
+    margin-top: 10px;
+    text-align: center;
+    color: #ffcc99;
+    font-family: 'Metal Mania', cursive;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #2a0a1a;
+    border: 1px solid #ff6600;
+    color: #ffcc99;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+}
+
+.lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #2a0a1a;
+    border: 1px solid #ff6600;
+    color: #ffcc99;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+.lightbox-nav.prev { left: 8px; }
+.lightbox-nav.next { right: 8px; }
+
+/* Botón de descarga (reutilizable) */
+.download-btn {
+    margin-top: 10px;
+    background: linear-gradient(135deg, #ff6600 0%, #ff3300 100%);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+}
+.download-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+}
+
+/* --- Tarjetas de galería: botón de descarga superpuesto --- */
+.gallery-card {
+    position: relative;
+}
+.card-download-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #2a0a1a;
+    border: 1px solid #ff6600;
+    color: #ffcc99;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    text-decoration: none;
+    box-shadow: 0 0 8px rgba(255,102,0,.3);
+}
+.card-download-btn:hover {
+    box-shadow: 0 0 12px rgba(255,102,0,.5);
+}
+
 /* --- Estilos Generales y del Contenedor --- */
 body {
     font-family: Arial, sans-serif;
@@ -45,8 +172,319 @@ h2 {
     text-shadow: 1px 1px 2px #4b0082;
 }
 
+/* --- Componente de Carga de Imágenes --- */
+.upload-section {
+    margin: 0 auto 30px;
+    max-width: 500px;
+    position: relative;
+    z-index: 1;
+}
+
+.upload-container {
+    position: relative;
+    border: 3px dashed #ff6600;
+    border-radius: 15px;
+    padding: 30px 20px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    background: linear-gradient(135deg, rgba(40, 15, 30, 0.9) 0%, rgba(80, 15, 40, 0.8) 100%);
+    margin-bottom: 25px;
+    overflow: hidden;
+    box-shadow: 0 5px 25px rgba(255, 60, 0, 0.2);
+}
+
+.upload-container.halloween-theme {
+    background: linear-gradient(135deg, #1a0a1a 0%, #2a0a1a 100%);
+    border: 2px dashed #ff6600;
+    box-shadow: 0 0 15px rgba(255, 102, 0, 0.3);
+}
+
+.upload-container.halloween-theme .upload-content {
+    position: relative;
+    z-index: 2;
+}
+
+.halloween-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid transparent;
+    border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,100 L0,100 Z" fill="none" stroke="%23ff6600" stroke-width="4" stroke-dasharray="10,5" stroke-linecap="round" stroke-linejoin="round"/></svg>') 10% round;
+    pointer-events: none;
+    opacity: 0.7;
+    z-index: 1;
+}
+
+.upload-container:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 60, 0, 0.4);
+    border-color: #ff9900;
+}
+
+.upload-container.dragover {
+    background: linear-gradient(135deg, #2a0a1a 0%, #3a0a1a 100%);
+    transform: scale(1.02);
+    border-style: solid;
+    animation: pulse 1.5s infinite;
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+.halloween-icon {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.upload-icon {
+    width: 80px;
+    height: 80px;
+    transition: all 0.4s ease;
+    filter: drop-shadow(0 0 5px rgba(255, 102, 0, 0.7));
+}
+
+.upload-container:hover .upload-icon {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 10px rgba(255, 102, 0, 0.9));
+}
+
+.upload-text {
+    font-size: 1.4rem;
+    color: #ff9900;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(255, 102, 0, 0.5);
+    font-family: 'Creepster', cursive;
+    letter-spacing: 1px;
+}
+
+.upload-subtext {
+    font-size: 1rem;
+    color: #ffcc99;
+    margin: 5px 0 15px;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Animación de murciélagos */
+.halloween-bats {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.7;
+}
+
+.bat {
+    position: absolute;
+    font-size: 20px;
+    opacity: 0;
+    animation: fly 15s linear infinite;
+}
+
+.bat-2 {
+    animation-delay: 3s;
+    font-size: 15px;
+    animation-duration: 20s;
+}
+
+.bat-3 {
+    animation-delay: 7s;
+    font-size: 25px;
+    animation-duration: 25s;
+}
+
+@keyframes fly {
+    0% {
+        transform: translate(-50px, 0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(calc(100vw + 50px), 100px) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* Estilos para la vista previa */
+.preview-container {
+    margin: 30px auto;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+}
+
+.preview-content {
+    position: relative;
+    display: inline-block;
+}
+
+.preview-frame {
+    position: relative;
+    padding: 15px;
+    background: linear-gradient(135deg, #2a0a1a 0%, #1a0a1a 100%);
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    border: 2px solid #ff6600;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 5px;
+    display: block;
+    position: relative;
+    z-index: 2;
+}
+
+.frame-top, .frame-bottom, .frame-side {
+    position: absolute;
+    color: #ff6600;
+    font-size: 20px;
+    z-index: 3;
+    opacity: 0.7;
+}
+
+.frame-top {
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    line-height: 1;
+    transform: translateY(-50%);
+    background: #1a0a1a;
+    padding: 0 10px;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.frame-bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    line-height: 1;
+    transform: translateY(50%);
+    background: #1a0a1a;
+    padding: 0 10px;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.frame-side {
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    line-height: 0.8;
+    background: #1a0a1a;
+    padding: 10px 5px;
+    border-radius: 5px;
+}
+
+.frame-left {
+    left: 0;
+    transform: translate(-50%, -50%);
+}
+
+.frame-right {
+    right: 0;
+    transform: translate(50%, -50%);
+}
+
+.change-image-btn {
+    margin-top: 20px;
+    background: linear-gradient(135deg, #ff6600 0%, #ff3300 100%);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.change-image-btn .btn-icon {
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
+}
+
+.change-image-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+    background: linear-gradient(135deg, #ff8533 0%, #ff471a 100%);
+}
+
+.change-image-btn:hover .btn-icon {
+    transform: rotate(180deg);
+}
+
+/* Efecto de brillo en el borde al pasar el ratón */
+.upload-container::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: linear-gradient(45deg, #ff3300, #ff9900, #ff3300);
+    background-size: 200% 200%;
+    z-index: -1;
+    border-radius: 18px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.upload-container:hover::before {
+    opacity: 0.7;
+    animation: borderGlow 3s ease infinite;
+}
+
+@keyframes borderGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Efecto de brillo al arrastrar archivo */
+@keyframes glowPulse {
+    0% { box-shadow: 0 0 10px rgba(255, 102, 0, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(255, 153, 0, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(255, 102, 0, 0.5); }
+}
+
+.upload-container.dragover {
+    animation: glowPulse 1.5s infinite;
+}
+
 /* --- Secciones de Interfaz y Formulario --- */
-.upload-section, .selectors-section, .results-section {
+.selectors-section, .results-section {
     margin-bottom: 25px;
 }
 
