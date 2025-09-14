@@ -19,3 +19,15 @@
   to = "https://flask-backend-847482554042.us-central1.run.app/api/:splat"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/galeria"
+  to = "/gallery.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/galeria/"
+  to = "/gallery.html"
+  status = 200
+  force = true
