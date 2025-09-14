@@ -1,0 +1,21 @@
+[build]
+  command = ""
+  publish = "."
+
+[[redirects]]
+  from = "/upload"
+  to = "https://flask-backend-847482554042.us-central1.run.app/upload"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/transform"
+  to = "https://flask-backend-847482554042.us-central1.run.app/transform"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://flask-backend-847482554042.us-central1.run.app/api/:splat"
+  status = 200
+  force = true
