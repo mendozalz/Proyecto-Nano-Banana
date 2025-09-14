@@ -42,6 +42,7 @@ from io import BytesIO
 from PIL import Image
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
+from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 
 # Integración opcional con Firestore (soporte de proyecto y base nombrada vía entorno)
@@ -75,11 +76,74 @@ os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
+load_dotenv()  # Cargar variables desde .env si existe
+
 app = Flask(__name__, static_folder=STATIC_FOLDER)
+
+# Cabeceras de seguridad básicas
+@app.after_request
+def add_security_headers(response):
+    try:
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        # CSP: permitir Google Fonts y el CDN de SweetAlert2 (jsDelivr) para scripts
+        csp = "default-src 'self'; " \
+              "img-src 'self' data: blob:; " \
+              "media-src 'self' data:; " \
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " \
+              "font-src 'self' https://fonts.gstatic.com; " \
+              "script-src 'self' https://cdn.jsdelivr.net; " \
+              "connect-src 'self'"
+        response.headers['Content-Security-Policy'] = csp
+    except Exception:
+        pass
+    return response
 
 
 def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# ---- Poem generation helper (Gemini) ----
+def _generate_poem_lines(display_name: str, disfraz: str) -> list[str]:
+    name = (display_name or "una sombra").strip()
+    theme = (disfraz or "fantasma").strip()
+    base_fallback = [
+        f"{name} camina entre susurros y luna: la noche aprende tu nombre.",
+        f"Bajo el signo de {theme}, vibra el aire con metáforas encendidas.",
+        "La oscuridad te saluda con elegancia: todo brilla un poco distinto.",
+    ]
+    api_key = os.environ.get('GEMINI_API_KEY', '').strip()
+    if not api_key:
+        return base_fallback
+    try:
+        import google.generativeai as genai  # type: ignore
+        genai.configure(api_key=api_key)
+        model_name = os.environ.get('GEMINI_TEXT_MODEL', 'gemini-1.5-flash')
+        model = genai.GenerativeModel(model_name)
+        prompt = (
+            "Actúa como poeta en español latino. Escribe exactamente 3 versos libres, uno por línea, "
+            "sin numeración ni comillas, máximo 300 caracteres por verso. Tema: Halloween y la figura "
+            f"‘{theme}’. Integra el nombre ‘{name}’ de forma sutil y elegante (no lo repitas en todas las líneas). "
+            "Tono cinematográfico y metáforas sensoriales. Evita clichés obvios, rimas forzadas, emojis y signos innecesarios. "
+            "Devuélveme solo las tres líneas separadas por saltos de línea."
+        )
+        res = model.generate_content(prompt)
+        text = (getattr(res, 'text', '') or '').strip()
+        if not text:
+            # algunos SDK exponen output_text
+            text = (getattr(res, 'output_text', '') or '').strip()
+        if not text:
+            return base_fallback
+        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        # Normalizar a exactamente 3 líneas
+        if len(lines) >= 3:
+            return lines[:3]
+        while len(lines) < 3:
+            lines.append(base_fallback[len(lines)])
+        return lines
+    except Exception as _:
+        return base_fallback
 
 
 @app.route('/', methods=['GET'])
@@ -191,6 +255,9 @@ def transform_halloween():
 
     if not image_url:
         return jsonify({'error': 'Falta image_url (usa /upload primero)'}), 400
+
+    # Generar poema (poem_lines) desde IA o fallback
+    poem_lines: list[str] = _generate_poem_lines(display_name, disfraz)
 
     # Por defecto, usar la misma imagen (fallback)
     transformed_image_url = image_url
@@ -491,7 +558,8 @@ def transform_halloween():
                 'estado': 'generated_ai' if final_image_bytes is not None else 'themed_local',
                 'display_name': display_name,
                 'transformed_image_b64': stored_b64 or None,
-                'transformed_mime': stored_mime or None
+                'transformed_mime': stored_mime or None,
+                'poem_lines': poem_lines
             })
         except Exception as e:
             print(f"[Aviso] No se pudo escribir en Firestore: {e}")
@@ -501,6 +569,7 @@ def transform_halloween():
         'data_url': data_url,
         'animation_url': None,
         'sound_url': None,
+        'poem_lines': poem_lines,
         'ai_debug': {
             'model': os.environ.get('GEMINI_IMAGE_MODEL', 'imagen-3.0-fast'),
             'changed': transformed_image_url != image_url,
@@ -569,6 +638,21 @@ def api_gallery():
                     continue
                 if dn:
                     item['display_name'] = dn
+                # Incluir disfraz para narrativa/sonido en galería
+                try:
+                    df = (data.get('disfraz') or '').strip()
+                    if df:
+                        item['disfraz'] = df
+                except Exception:
+                    pass
+                # Incluir poema si fue generado y guardado
+                try:
+                    pls = data.get('poem_lines')
+                    if isinstance(pls, list) and pls:
+                        # Asegurar 3 líneas
+                        item['poem_lines'] = [str(x) for x in pls][:3]
+                except Exception:
+                    pass
                 # Nombre sugerido para descarga
                 try:
                     base = ''.join(c.lower() if c.isalnum() or c in ('-', '_') else '-' for c in dn).strip('-_') or 'imagen'

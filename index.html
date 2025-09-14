@@ -6,14 +6,18 @@
     <title>Transformación Halloweenia</title>
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="static/images/favicon.png" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 </head>
 <body>
     <div class="halloween-container">
-        <nav style="text-align:left; margin-bottom: 10px;">
-            <a href="/" style="color:#ff9900; margin-right:12px; text-decoration:none;">Inicio</a>
+        <nav style="text-align:left; margin-bottom: 10px; display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="/" style="color:#ff9900; text-decoration:none;">Inicio</a>
             <a href="/galeria" style="color:#ff9900; text-decoration:none;">Galería</a>
+            <a id="howToLink" href="#" style="color:#ff9900; text-decoration:none;">Cómo usar</a>
+            <a id="creditsLink" href="#" style="color:#ff9900; text-decoration:none;">Créditos</a>
         </nav>
-        <h1>🎃 Tu Álter Ego Halloween 👻</h1>
+        <h1>🎃 Tu Álter Ego👻</h1>
+        <h2 class="halloween-title" style="color:#F06406;">👻 Halloween by Polygonus 🎃</h2>
         <div class="upload-section">
             <div class="upload-container halloween-theme" id="dropZone">
                 <div class="upload-content">
@@ -84,13 +88,24 @@
             <div class="image-stage" style="display:none;">
                 <img id="transformedImage" src="#" alt="Imagen Transformada" style="max-width: 400px;">
                 <img id="themeOverlay" alt="Overlay Temático" style="display:none;">
+                <!-- Canvas de brasas creativas (Fase 4) -->
+                <canvas id="emberCanvas" style="display:none;"></canvas>
             </div>
             <div id="downloadArea" style="display:none; margin-top:10px;">
                 <a id="downloadResultBtn" class="download-btn" href="#" download>Descargar imagen</a>
             </div>
+            <div style="margin-top:10px;">
+                <button id="emberToggleBtn" class="download-btn" style="display:none;">Activar brasas ✨🔥</button>
+            </div>
             <video id="halloweenAnimation" controls loop style="display:none; max-width: 400px; margin-top: 15px;"></video>
             <audio id="halloweenSound" controls style="display:none; margin-top: 10px;"></audio>
+            <div id="playSoundArea" style="margin-top:10px;">
+                <button id="playSoundBtn" class="download-btn" style="display:none;">Reproducir sonido</button>
+            </div>
+            <!-- Brochure narrativo (se llena dinámicamente) -->
+            <div id="brochureContainer" style="display:none; margin-top:16px;"></div>
             <p id="loadingMessage" style="display:none;">Procesando tu magia de Halloween <br> esto puede tardar un poco...</p>
+            <div id="spinner" aria-hidden="true" style="display:none;"></div>
             <!-- <div id="aiStatus" style="display:none; margin-top:8px; font-size: 0.95rem;"></div> -->
         </div>
     </div>

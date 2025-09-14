@@ -17,6 +17,30 @@
     letter-spacing: 0.3px;
 }
 
+/* Subtítulo del brochure */
+.brochure-subtitle {
+    margin: 10px 0 8px;
+    text-align: center;
+    color: #ffcc99;
+    font-family: 'Metal Mania', cursive;
+    letter-spacing: 0.5px;
+}
+
+/* Poema con iconos alternados */
+.poem-line-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+.poem-line-row.right { justify-content: flex-end; }
+.poem-line-icon {
+    width: 24px; height: 24px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+}
+.poem-line-text { font-size: 1.05rem; line-height: 1.45; }
+
 /* --- Lightbox (galería) --- */
 .lightbox-overlay {
     position: fixed;
@@ -37,6 +61,25 @@
     border-radius: 12px;
     box-shadow: 0 0 25px rgba(255,102,0,0.4);
     padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Indicador de scroll (fade inferior) dentro del lightbox */
+.lightbox-content.scroll-fade::after {
+    content: '';
+    position: sticky;
+    display: block;
+    bottom: -16px; /* queda visible al final del contenido */
+    left: 0;
+    right: 0;
+    height: 36px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(42,10,26,0), rgba(42,10,26,0.9));
+}
+
+.lightbox-content.scroll-fade.hide-fade::after {
+    background: none;
 }
 
 .lightbox-content img {
@@ -47,6 +90,13 @@
     border: 2px solid #a333c1;
     box-shadow: 0 0 12px #a333c1;
     margin: 0 auto;
+}
+
+/* Canvas de brasas para lightbox (posición exacta la define JS con left/top) */
+#lbEmberCanvas {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
 }
 
 .lightbox-caption {
@@ -144,7 +194,7 @@ body {
 }
 
 .halloween-container {
-    width: 90%;
+    width: 100%;
     max-width: 800px;
     background-color: rgba(26, 26, 26, 0.9);
     padding: 30px 40px;
@@ -153,11 +203,27 @@ body {
     text-align: center;
     border: 2px solid #ff6600;
 }
+.swal2-popup.swal2-modal.swal2-theme-halloween.swal2-show {
+    width: 600px;
+}
+
+ol.howto-list, ul.credits-list {
+    text-align: left;
+    line-height: 35px;
+}
 
 /* --- Títulos y Encabezados --- */
 h1 {
     font-family: 'Creepster', cursive;
     font-size: 3.5rem;
+    color: #ff6600;
+    text-shadow: 2px 2px 4px #8a0303;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+h2.halloween-title{
+    font-family: 'Creepster', cursive;
     color: #ff6600;
     text-shadow: 2px 2px 4px #8a0303;
     margin-bottom: 20px;
@@ -539,6 +605,7 @@ select {
 .results-section {
     border-top: 2px dashed #ff6600;
     padding-top: 20px;
+    margin-top: 30px;
 }
 
 #previewImage, #transformedImage, #halloweenAnimation, #halloweenSound {
@@ -555,6 +622,19 @@ select {
     margin-top: 20px;
     font-family: 'Metal Mania', cursive;
 }
+
+/* Spinner de carga */
+#spinner {
+    width: 36px; height: 36px; margin: 10px auto 0;
+    border: 4px solid rgba(255,255,255,0.15);
+    border-top-color: #ff8c00;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Paneles informativos (Cómo usar / Créditos) */
+.panel { margin-top: 28px; }
 
 /* --- Escenario de imagen con overlay --- */
 .image-stage {
@@ -576,6 +656,12 @@ select {
     pointer-events: none;
     mix-blend-mode: screen;
     opacity: 0.75;
+}
+/* Canvas de brasas (Fase 4) - posición exacta definida por JS (left/top) */
+#emberCanvas {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
 }
 
 /* --- Temáticas Halloween para la imagen transformada --- */
@@ -642,3 +728,78 @@ body::after {
     background: url('static/images/derecha_img.png') no-repeat;
     background-size: contain;
 } */
+
+/* --- Brochure narrativo estilo pergamino --- */
+.parchment-bg {
+    background: #f6f0e6;
+    background-image: radial-gradient(rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-size: 6px 6px;
+    color: #2b1d12;
+    border: 2px solid #d0bfa5;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25), inset 0 0 40px rgba(175, 134, 78, 0.15);
+    padding: 16px;
+}
+
+.brochure {
+    max-width: 860px;
+    margin: 12px auto 0;
+}
+
+.brochure-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 14px 0;
+}
+
+.brochure-img {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff7e1, #eedcc1);
+    border: 2px solid #d0bfa5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+}
+
+.brochure-img.right {
+    order: 2;
+}
+
+.brochure-text {
+    flex: 1;
+    line-height: 1.5;
+    font-size: 1.02rem;
+    color: #2b1d12;
+}
+
+.brochure-text p {
+    margin: 0;
+}
+
+/* btn modal */
+
+.swal2-confirm{
+    background-color: #ff6600;
+}
+
+@media (max-width: 640px) {
+    .brochure-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .brochure-img.right {
+        order: 0;
+    }
+    #lbEmberCanvas{
+        display: block;
+        width: 393px;
+        height: 354px;
+        margin-left: -3%;
+        top: 4%;
+    }
+}
