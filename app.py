@@ -517,7 +517,7 @@ def transform_halloween():
         except Exception:
             final_image_bytes = None
 
-    # Convertir a WebP comprimido (<~900 KiB) y construir data_url; guardar en Firestore
+    # Convertir a WebP comprimido (<~900 KiB), construir data_url y (nuevo) guardar también en results/ para galería filesystem
     stored_b64 = None
     stored_mime = None
     if final_image_bytes is not None:
@@ -543,7 +543,18 @@ def transform_halloween():
             stored_b64 = base64.b64encode(webp_bytes).decode('utf-8')
             stored_mime = 'image/webp'
             data_url = f"data:{stored_mime};base64,{stored_b64}"
-            transformed_image_url = ''  # no dependemos del filesystem
+
+            # Guardar también en filesystem (results/) para que /api/gallery tenga fallback aunque falle Firestore
+            try:
+                safe_base = ''.join(c.lower() if c.isalnum() or c in ('-','_') else '-' for c in (display_name or 'imagen')).strip('-_') or 'imagen'
+                fname = f"{safe_base}-{uuid.uuid4().hex[:12]}.webp"
+                out_path = os.path.join(RESULTS_FOLDER, fname)
+                with open(out_path, 'wb') as f:
+                    f.write(webp_bytes)
+                transformed_image_url = f"/results/{fname}"
+            except Exception:
+                # Si no podemos escribir, mantenemos sólo data_url
+                transformed_image_url = ''
         except Exception as _e:
             pass
 
