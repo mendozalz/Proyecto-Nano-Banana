@@ -31,3 +31,15 @@
   to = "/gallery.html"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/uploads/*"
+  to = "https://flask-backend-847482554042.us-central1.run.app/uploads/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/results/*"
+  to = "https://flask-backend-847482554042.us-central1.run.app/results/:splat"
+  status = 200
+  force = true
